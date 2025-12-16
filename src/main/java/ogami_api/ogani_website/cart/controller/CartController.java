@@ -9,6 +9,7 @@ import ogami_api.ogani_website.cart.model.Cart;
 import ogami_api.ogani_website.cart.service.CartService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -17,8 +18,7 @@ import java.util.stream.Collectors;
 
 /**
  * REST Controller untuk Cart API.
- * Note: userId akan diambil dari JWT token (authenticated user).
- * Untuk sementara menggunakan hardcoded userId untuk testing.
+ * UserId diambil dari JWT token (authenticated user).
  */
 @RestController
 @RequestMapping("/api/cart")
@@ -29,12 +29,10 @@ public class CartController {
 
     /**
      * GET /api/cart - Get current user's cart.
-     * TODO: Extract userId dari JWT token
      */
     @GetMapping
-    public ResponseEntity<CartResponse> getCart() {
-        // Hardcoded untuk testing - nanti ambil dari JWT
-        Integer userId = 1;  // TODO: Get from authentication
+    public ResponseEntity<CartResponse> getCart(Authentication authentication) {
+        Integer userId = getUserIdFromAuth(authentication);
 
         List<Cart> cartItems = cartService.getCartByUserId(userId);
         CartResponse response = toCartResponse(cartItems);
@@ -45,8 +43,10 @@ public class CartController {
      * POST /api/cart - Add product to cart.
      */
     @PostMapping
-    public ResponseEntity<CartItemResponse> addToCart(@Valid @RequestBody CartRequest request) {
-        Integer userId = 1;  // TODO: Get from authentication
+    public ResponseEntity<CartItemResponse> addToCart(
+            @Valid @RequestBody CartRequest request,
+            Authentication authentication) {
+        Integer userId = getUserIdFromAuth(authentication);
 
         Cart cart = cartService.addToCart(userId, request.getProductId(), request.getQuantity());
         return ResponseEntity.status(HttpStatus.CREATED).body(toCartItemResponse(cart));
@@ -76,13 +76,23 @@ public class CartController {
      * DELETE /api/cart - Clear all cart items.
      */
     @DeleteMapping
-    public ResponseEntity<Void> clearCart() {
-        Integer userId = 1;  // TODO: Get from authentication
+    public ResponseEntity<Void> clearCart(Authentication authentication) {
+        Integer userId = getUserIdFromAuth(authentication);
         cartService.clearCart(userId);
         return ResponseEntity.noContent().build();
     }
 
     // Helper methods
+
+    /**
+     * Extract userId from JWT authentication principal.
+     */
+    private Integer getUserIdFromAuth(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return (Integer) authentication.getPrincipal();
+    }
 
     private CartItemResponse toCartItemResponse(Cart cart) {
         BigDecimal subtotal = cart.getProduct().getPrice()

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,9 +38,10 @@ public class OrderController {
     public ResponseEntity<?> getUserOrders(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
-            @RequestParam(required = false) String sort) {
+            @RequestParam(required = false) String sort,
+            Authentication authentication) {
         
-        Integer userId = 1;  // TODO: Get from JWT authentication
+        Integer userId = getUserIdFromAuth(authentication);
 
         // If pagination params provided, return paginated response
         if (page != null && size != null) {
@@ -79,8 +81,10 @@ public class OrderController {
      * POST /api/orders - Create order (checkout from cart).
      */
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
-        Integer userId = 1;  // TODO: Get from JWT authentication
+    public ResponseEntity<OrderResponse> createOrder(
+            @Valid @RequestBody OrderRequest request,
+            Authentication authentication) {
+        Integer userId = getUserIdFromAuth(authentication);
 
         Order order = orderService.createOrderFromCart(
                 userId,
@@ -113,6 +117,16 @@ public class OrderController {
     }
 
     // Helper methods
+
+    /**
+     * Extract userId from JWT authentication principal.
+     */
+    private Integer getUserIdFromAuth(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return (Integer) authentication.getPrincipal();
+    }
 
     private Pageable createPageable(Integer page, Integer size, String sort) {
         int pageNumber = (page != null && page >= 0) ? page : 0;
