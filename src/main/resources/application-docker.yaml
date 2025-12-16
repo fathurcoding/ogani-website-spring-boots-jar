@@ -1,0 +1,17 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/ogani_app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Jakarta
+    username: myuser
+    password: mypassword
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:

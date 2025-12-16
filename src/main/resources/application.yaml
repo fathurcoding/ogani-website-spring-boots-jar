@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: ogani-website
+
+  profiles:
+    active: local   # default kalau jalan dari IDE
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/ogani_app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Jakarta
+    username: root
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none  # Use existing schema, don't modify
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+
+logging:
+  level:
+    ogami_api.ogani_website: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
