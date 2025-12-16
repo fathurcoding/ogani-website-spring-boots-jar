@@ -10,6 +10,7 @@ import lombok.ToString;
 import ogami_api.ogani_website.cart.model.Cart;
 import ogami_api.ogani_website.order.model.Order;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -40,8 +41,22 @@ public class User {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
+    // ===== Enhanced Profile Fields =====
+    
+    @Column(name = "full_name", length = 255)
+    private String fullName;
+
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "address", columnDefinition = "TEXT")
+    private String address;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
