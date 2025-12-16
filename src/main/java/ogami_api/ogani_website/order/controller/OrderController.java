@@ -8,6 +8,10 @@ import ogami_api.ogani_website.order.dto.OrderResponse;
 import ogami_api.ogani_website.order.model.Order;
 import ogami_api.ogani_website.order.model.OrderStatus;
 import ogami_api.ogani_website.order.service.OrderService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +30,26 @@ public class OrderController {
     private final OrderService orderService;
 
     /**
-     * GET /api/orders - Get current user's orders.
+     * GET /api/orders - Get current user's orders with optional pagination.
+     * Params: page, size, sort
      */
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getUserOrders() {
+    public ResponseEntity<?> getUserOrders(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort) {
+        
         Integer userId = 1;  // TODO: Get from JWT authentication
 
+        // If pagination params provided, return paginated response
+        if (page != null && size != null) {
+            Pageable pageable = createPageable(page, size, sort);
+            Page<Order> orderPage = orderService.getOrdersByUserId(userId, pageable);
+            Page<OrderResponse> responsePage = orderPage.map(this::toOrderResponse);
+            return ResponseEntity.ok(responsePage);
+        }
+        
+        // Otherwise return all orders
         List<Order> orders = orderService.getOrdersByUserId(userId);
         List<OrderResponse> response = orders.stream()
                 .map(this::toOrderResponse)
@@ -95,6 +113,21 @@ public class OrderController {
     }
 
     // Helper methods
+
+    private Pageable createPageable(Integer page, Integer size, String sort) {
+        int pageNumber = (page != null && page >= 0) ? page : 0;
+        int pageSize = (size != null && size > 0 && size <= 100) ? size : 10;
+        
+        if (sort != null && !sort.isBlank()) {
+            String[] sortParams = sort.split(",");
+            String field = sortParams[0];
+            Sort.Direction direction = (sortParams.length > 1 && "desc".equalsIgnoreCase(sortParams[1])) 
+                    ? Sort.Direction.DESC : Sort.Direction.ASC;
+            return PageRequest.of(pageNumber, pageSize, Sort.by(direction, field));
+        }
+        
+        return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "orderTime"));
+    }
 
     private OrderResponse toOrderResponse(Order order) {
         List<OrderItemResponse> items = null;

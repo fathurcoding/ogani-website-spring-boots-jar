@@ -3,10 +3,15 @@ package ogami_api.ogani_website.product.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ogami_api.ogani_website.category.model.Category;
+import ogami_api.ogani_website.product.dto.BulkProductRequest;
 import ogami_api.ogani_website.product.dto.ProductRequest;
 import ogami_api.ogani_website.product.dto.ProductResponse;
 import ogami_api.ogani_website.product.model.Product;
 import ogami_api.ogani_website.product.service.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +30,24 @@ public class ProductController {
     private final ProductService productService;
 
     /**
-     * GET /api/products - Get all products.
+     * GET /api/products - Get all products with optional pagination.
+     * Params: page (default 0), size (default 10), sort (default productId,asc)
      */
     @GetMapping
-    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+    public ResponseEntity<?> getAllProducts(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort) {
+        
+        // If pagination params provided, return paginated response
+        if (page != null && size != null) {
+            Pageable pageable = createPageable(page, size, sort);
+            Page<Product> productPage = productService.getAllProducts(pageable);
+            Page<ProductResponse> responsePage = productPage.map(this::toResponse);
+            return ResponseEntity.ok(responsePage);
+        }
+        
+        // Otherwise return all products
         List<Product> products = productService.getAllProducts();
         List<ProductResponse> response = products.stream()
                 .map(this::toResponse)
@@ -112,7 +131,50 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * POST /api/products/bulk - Bulk create products.
+     */
+    @PostMapping("/bulk")
+    public ResponseEntity<List<ProductResponse>> createProductsBulk(@Valid @RequestBody BulkProductRequest request) {
+        List<Product> products = request.getProducts().stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
+        
+        List<Product> created = productService.createProductsBulk(products);
+        List<ProductResponse> response = created.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * DELETE /api/products/bulk?ids=1,2,3 - Bulk delete products.
+     */
+    @DeleteMapping("/bulk")
+    public ResponseEntity<Void> deleteProductsBulk(@RequestParam List<Integer> ids) {
+        productService.deleteProductsBulk(ids);
+        return ResponseEntity.noContent().build();
+    }
+
     // Helper methods
+
+    private Pageable createPageable(Integer page, Integer size, String sort) {
+        // Default values
+        int pageNumber = (page != null && page >= 0) ? page : 0;
+        int pageSize = (size != null && size > 0 && size <= 100) ? size : 10;
+        
+        // Parse sort parameter (format: "field,direction" or just "field")
+        if (sort != null && !sort.isBlank()) {
+            String[] sortParams = sort.split(",");
+            String field = sortParams[0];
+            Sort.Direction direction = (sortParams.length > 1 && "desc".equalsIgnoreCase(sortParams[1])) 
+                    ? Sort.Direction.DESC : Sort.Direction.ASC;
+            return PageRequest.of(pageNumber, pageSize, Sort.by(direction, field));
+        }
+        
+        return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "productId"));
+    }
 
     private Product toEntity(ProductRequest request) {
         return Product.builder()

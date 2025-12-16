@@ -12,6 +12,8 @@ import ogami_api.ogani_website.order.repository.OrderRepository;
 import ogami_api.ogani_website.product.model.Product;
 import ogami_api.ogani_website.product.service.ProductService;
 import ogami_api.ogani_website.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,13 @@ public class OrderService {
      */
     public List<Order> getOrdersByUserId(Integer userId) {
         return orderRepository.findByUser_UserId(userId);
+    }
+
+    /**
+     * Get all orders untuk user tertentu with pagination.
+     */
+    public Page<Order> getOrdersByUserId(Integer userId, Pageable pageable) {
+        return orderRepository.findByUser_UserId(userId, pageable);
     }
 
     /**

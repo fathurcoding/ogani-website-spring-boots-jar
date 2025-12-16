@@ -1,11 +1,14 @@
 package ogami_api.ogani_website.product.service;
 
 import lombok.RequiredArgsConstructor;
+import ogami_api.ogani_website.category.model.Category;
 import ogami_api.ogani_website.category.repository.CategoryRepository;
 import ogami_api.ogani_website.exception.DataNotFoundException;
 import ogami_api.ogani_website.exception.InsufficientStockException;
 import ogami_api.ogani_website.product.model.Product;
 import ogami_api.ogani_website.product.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,13 @@ public class ProductService {
      */
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    /**
+     * Get all products with pagination.
+     */
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 
     /**
@@ -125,13 +135,12 @@ public class ProductService {
     }
 
     /**
-     * Delete product.
+     * Delete product by ID.
      */
-    public void deleteProduct(Integer id) {
-        if (!productRepository.existsById(id)) {
-            throw new DataNotFoundException("Product", id);
-        }
-        productRepository.deleteById(id);
+    @Transactional
+    public void deleteProduct(Integer productId) {
+        Product product = getProductById(productId);
+        productRepository.delete(product);
     }
 
     /**
@@ -150,5 +159,41 @@ public class ProductService {
 
         product.setStock(product.getStock() - quantity);
         productRepository.save(product);
+    }
+
+    /**
+     * Bulk create products.
+     */
+    @Transactional
+    public List<Product> createProductsBulk(List<Product> products) {
+        // Validate all products
+        for (Product product : products) {
+            // Check if category exists
+            if (product.getCategory() != null && product.getCategory().getCategoryId() != null) {
+                Category category = categoryRepository.findById(product.getCategory().getCategoryId())
+                        .orElseThrow(() -> new DataNotFoundException(
+                                "Category not found with id: " + product.getCategory().getCategoryId()));
+                product.setCategory(category);
+            }
+        }
+
+        // Save all products in batch
+        return productRepository.saveAll(products);
+    }
+
+    /**
+     * Bulk delete products by IDs.
+     */
+    @Transactional
+    public void deleteProductsBulk(List<Integer> productIds) {
+        // Validate all products exist
+        for (Integer id : productIds) {
+            if (!productRepository.existsById(id)) {
+                throw new DataNotFoundException("Product not found with id: " + id);
+            }
+        }
+
+        // Delete all products
+        productRepository.deleteAllById(productIds);
     }
 }

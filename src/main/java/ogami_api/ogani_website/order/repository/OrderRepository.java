@@ -2,6 +2,8 @@ package ogami_api.ogani_website.order.repository;
 
 import ogami_api.ogani_website.order.model.Order;
 import ogami_api.ogani_website.order.model.OrderStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +20,11 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
      * Find all orders for a specific user.
      */
     List<Order> findByUser_UserId(Integer userId);
+
+    /**
+     * Find all orders for a specific user with pagination.
+     */
+    Page<Order> findByUser_UserId(Integer userId, Pageable pageable);
 
     /**
      * Find order by invoice code.

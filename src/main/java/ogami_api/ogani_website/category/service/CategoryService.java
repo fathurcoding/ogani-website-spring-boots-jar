@@ -5,6 +5,8 @@ import ogami_api.ogani_website.category.model.Category;
 import ogami_api.ogani_website.category.repository.CategoryRepository;
 import ogami_api.ogani_website.exception.DataAlreadyExistsException;
 import ogami_api.ogani_website.exception.DataNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,13 @@ public class CategoryService {
      */
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
+    }
+
+    /**
+     * Get all categories with pagination.
+     */
+    public Page<Category> getAllCategories(Pageable pageable) {
+        return categoryRepository.findAll(pageable);
     }
 
     /**
@@ -84,5 +93,43 @@ public class CategoryService {
             throw new DataNotFoundException("Category", id);
         }
         categoryRepository.deleteById(id);
+    }
+
+    /**
+     * Bulk create categories.
+     */
+    @Transactional
+    public List<Category> createCategoriesBulk(List<Category> categories) {
+        // Validate all categories
+        for (Category category : categories) {
+            // Check for empty name
+            if (category.getCategoryName() == null || category.getCategoryName().isBlank()) {
+                throw new IllegalArgumentException("Category name wajib diisi");
+            }
+            
+            // Check for duplicate names
+            if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
+                throw new DataAlreadyExistsException("Category dengan nama " + category.getCategoryName() + " sudah ada");
+            }
+        }
+
+        // Save all categories in batch
+        return categoryRepository.saveAll(categories);
+    }
+
+    /**
+     * Bulk delete categories by IDs.
+     */
+    @Transactional
+    public void deleteCategoriesBulk(List<Integer> categoryIds) {
+        // Validate all categories exist
+        for (Integer id : categoryIds) {
+            if (!categoryRepository.existsById(id)) {
+                throw new DataNotFoundException("Category not found with id: " + id);
+            }
+        }
+
+        // Delete all categories
+        categoryRepository.deleteAllById(categoryIds);
     }
 }
