@@ -25,11 +25,25 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://accounts.google.com
+  main:
+    allow-bean-definition-overriding: true
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  secret: 8Jvl+8khSp3j0VL8vTz0J2TRhCXfLp7UdQjb2P9WqJA=
   expiration: 86400000  # 24 hours in milliseconds
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+    display-request-duration: true
+    filter: true
+  api-docs:
+    path: /api-docs
+  show-actuator: false
 
 logging:
   level:

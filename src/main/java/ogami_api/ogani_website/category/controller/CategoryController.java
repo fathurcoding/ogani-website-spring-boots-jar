@@ -1,5 +1,6 @@
 package ogami_api.ogani_website.category.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ogami_api.ogani_website.category.dto.BulkCategoryRequest;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
+@Tag(name = "Categories", description = "Product category management endpoints")
 public class CategoryController {
 
     private final CategoryService categoryService;
