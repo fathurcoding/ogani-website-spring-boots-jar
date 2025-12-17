@@ -1,7 +1,10 @@
 package ogami_api.ogani_website.cart.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ogami_api.ogani_website.cart.dto.CartItemResponse;
 import ogami_api.ogani_website.cart.dto.CartRequest;
 import ogami_api.ogani_website.cart.dto.CartResponse;
@@ -23,6 +26,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Shopping Cart", description = "Shopping cart operations (authentication required)")
+@SecurityRequirement(name = "bearerAuth")
 public class CartController {
 
     private final CartService cartService;

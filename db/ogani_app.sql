@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 19, 2025 at 07:32 PM
+-- Generation Time: Dec 16, 2025 at 10:46 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -156,7 +156,7 @@ INSERT INTO `products` (`product_id`, `product_name`, `description`, `price`, `s
 (4, 'Carrot', 'Local fresh carrots per kg', 10000.00, 89, 'https://i.pinimg.com/1200x/62/2d/3d/622d3d6a9254162fe71459bdd26b016f.jpg', 2),
 (5, 'Apple Juice', '600ML of Apple Juice', 22000.00, 60, 'https://i.pinimg.com/736x/ab/22/98/ab22987c0024f19f2c79b3fbf8fd27f9.jpg', 3),
 (6, 'Soft Dried Dragon Fruit', 'Hand Selected Dragon Fruit', 20000.00, 150, 'https://i.pinimg.com/736x/33/19/18/331918d332a80266587e3267fb36bfd3.jpg', 4),
-(7, 'Fried Chicken', 'Very Crunchy and Juicy', 12000.00, 69, 'https://i.pinimg.com/1200x/1b/c3/c1/1bc3c1feb503ba69895c5eaedcebbcfd.jpg', 5);
+(7, 'Fried Chicken', 'Very Crunchy and Juicy', 12000.00, 90, 'https://i.pinimg.com/1200x/1b/c3/c1/1bc3c1feb503ba69895c5eaedcebbcfd.jpg', 5);
 
 -- --------------------------------------------------------
 
@@ -168,8 +168,12 @@ CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `username` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
+  `full_name` varchar(255) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `phone_number` varchar(20) DEFAULT NULL,
+  `birth_date` date DEFAULT NULL,
+  `age` int(11) DEFAULT NULL,
+  `address` text DEFAULT NULL,
   `role` enum('admin','customer') DEFAULT 'customer'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -177,12 +181,14 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `phone_number`, `role`) VALUES
-(1, 'deleonwira', 'deleonwira@gmail.com', '123', '081234567890', 'customer'),
-(2, 'fathur', 'fathur@gmail.com', '123', '082198765432', 'customer'),
-(3, 'Admin', 'admin@gmail.com', '123', '080000000000', 'admin'),
-(4, 'jamaludin', 'jamaludin@gmail.com', '$2y$10$q3NRUUPs/4mKX7Op/6wUPe1/1V3fjZ/bkTt1qtbLg8t/4zr1S2fF6', '0182973123', 'customer'),
-(5, 'eren', 'eren@gmail.com', '$2y$10$462ssbPOW83ustV/m/n2e.hpE71HamBoq8eBeIFZzI2PlvPK3YO7S', '10293123', 'customer');
+INSERT INTO `users` (`user_id`, `username`, `email`, `full_name`, `password`, `phone_number`, `birth_date`, `age`, `address`, `role`) VALUES
+(1, 'deleonwira', 'deleonwira@gmail.com', NULL, '123', '081234567890', NULL, NULL, NULL, 'customer'),
+(2, 'fathur', 'fathur@gmail.com', NULL, '123', '082198765432', NULL, NULL, NULL, 'customer'),
+(3, 'Admin', 'admin@gmail.com', NULL, '123', '080000000000', NULL, NULL, NULL, 'customer'),
+(4, 'jamaludin', 'jamaludin@gmail.com', NULL, '$2y$10$q3NRUUPs/4mKX7Op/6wUPe1/1V3fjZ/bkTt1qtbLg8t/4zr1S2fF6', '0182973123', NULL, NULL, NULL, 'customer'),
+(5, 'eren', 'eren@gmail.com', NULL, '$2y$10$462ssbPOW83ustV/m/n2e.hpE71HamBoq8eBeIFZzI2PlvPK3YO7S', '10293123', NULL, NULL, NULL, 'customer'),
+(7, 'johndoe2025', 'john.doe@example.com', 'John Doe', '$2a$10$vDvz7bfItBOUqULorVFNguz0crZa6xqUZEDLMje1Q3n0GF52/S.by', '082299887766', '1990-01-15', 35, 'Jl. Sudirman No. 456, Jakarta Selatan', 'customer'),
+(8, 'admintest', 'admin@test.com', 'Admin Test User', '$2a$10$H5DnSy6ZHHfbKVyyGtcWoORjA3Hi2iGWQVVHOVxOHtWKgp4P9cGHq', '085512345678', '1985-03-20', 40, 'Jl. Admin Street No. 1, Jakarta', 'customer');
 
 --
 -- Indexes for dumped tables
@@ -230,7 +236,13 @@ ALTER TABLE `products`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `unique_email` (`email`),
+  ADD UNIQUE KEY `unique_phone` (`phone_number`),
+  ADD KEY `idx_users_full_name` (`full_name`),
+  ADD KEY `idx_users_phone` (`phone_number`),
+  ADD KEY `idx_users_email` (`email`),
+  ADD KEY `idx_users_username` (`username`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -270,7 +282,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables

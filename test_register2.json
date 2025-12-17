@@ -1,0 +1,9 @@
+{
+  "username": "admintest",
+  "email": "admin@test.com",
+  "password": "admin123",
+  "fullName": "Admin Test User",
+  "phoneNumber": "085512345678",
+  "birthDate": "1985-03-20",
+  "address": "Jl. Admin Street No. 1, Jakarta"
+}

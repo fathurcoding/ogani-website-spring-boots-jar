@@ -1,7 +1,10 @@
 package ogami_api.ogani_website.order.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ogami_api.ogani_website.order.dto.OrderItemResponse;
 import ogami_api.ogani_website.order.dto.OrderRequest;
 import ogami_api.ogani_website.order.dto.OrderResponse;
@@ -26,6 +29,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Orders", description = "Order management and checkout (authentication required)")
+@SecurityRequirement(name = "bearerAuth")
 public class OrderController {
 
     private final OrderService orderService;
