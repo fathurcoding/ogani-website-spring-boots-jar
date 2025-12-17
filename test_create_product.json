@@ -1,0 +1,8 @@
+{
+  "productName": "Test RBAC Product",
+  "productDescription": "Testing role-based admin protection",
+  "price": 15000,
+  "stock": 100,
+  "categoryId": 1,
+  "imageUrl": "test.jpg"
+}

@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -87,6 +88,8 @@ public class OrderController {
      * POST /api/orders - Create order (checkout from cart).
      */
     @PostMapping
+
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderResponse> createOrder(
             @Valid @RequestBody OrderRequest request,
             Authentication authentication) {
@@ -105,6 +108,8 @@ public class OrderController {
     /**
      * PUT /api/orders/{id}/status - Update order status (Admin only).
      */
+    @PreAuthorize("hasRole('ADMIN')")
+
     @PutMapping("/{id}/status")
     public ResponseEntity<OrderResponse> updateOrderStatus(
             @PathVariable Integer id,
@@ -116,6 +121,8 @@ public class OrderController {
     /**
      * DELETE /api/orders/{id} - Cancel order (only if PENDING).
      */
+    @PreAuthorize("hasRole('ADMIN')")
+
     @DeleteMapping("/{id}")
     public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Integer id) {
         Order order = orderService.cancelOrder(id);

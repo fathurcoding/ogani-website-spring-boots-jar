@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -70,6 +71,8 @@ public class CategoryController {
      * POST /api/categories - Create new category (Admin only).
      */
     @PostMapping
+
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request) {
         Category category = toEntity(request);
         Category created = categoryService.createCategory(category);
@@ -79,6 +82,8 @@ public class CategoryController {
     /**
      * PUT /api/categories/{id} - Update category (Admin only).
      */
+    @PreAuthorize("hasRole('ADMIN')")
+
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> updateCategory(
             @PathVariable Integer id,
@@ -91,6 +96,8 @@ public class CategoryController {
     /**
      * DELETE /api/categories/{id} - Delete category (Admin only).
      */
+    @PreAuthorize("hasRole('ADMIN')")
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {
         categoryService.deleteCategory(id);
@@ -117,6 +124,8 @@ public class CategoryController {
     /**
      * DELETE /api/categories/bulk?ids=1,2,3 - Bulk delete categories.
      */
+    @PreAuthorize("hasRole('ADMIN')")
+
     @DeleteMapping("/bulk")
     public ResponseEntity<Void> deleteCategoriesBulk(@RequestParam List<Integer> ids) {
         categoryService.deleteCategoriesBulk(ids);

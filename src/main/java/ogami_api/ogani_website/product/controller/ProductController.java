@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -108,6 +109,8 @@ public class ProductController {
      * POST /api/products - Create new product (Admin only).
      */
     @PostMapping
+
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
         Product product = toEntity(request);
         Product created = productService.createProduct(product);
@@ -117,6 +120,8 @@ public class ProductController {
     /**
      * PUT /api/products/{id} - Update product (Admin only).
      */
+    @PreAuthorize("hasRole('ADMIN')")
+
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Integer id,
@@ -129,6 +134,8 @@ public class ProductController {
     /**
      * DELETE /api/products/{id} - Delete product (Admin only).
      */
+    @PreAuthorize("hasRole('ADMIN')")
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Integer id) {
         productService.deleteProduct(id);
@@ -155,6 +162,8 @@ public class ProductController {
     /**
      * DELETE /api/products/bulk?ids=1,2,3 - Bulk delete products.
      */
+    @PreAuthorize("hasRole('ADMIN')")
+
     @DeleteMapping("/bulk")
     public ResponseEntity<Void> deleteProductsBulk(@RequestParam List<Integer> ids) {
         productService.deleteProductsBulk(ids);
