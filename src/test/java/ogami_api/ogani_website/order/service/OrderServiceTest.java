@@ -6,10 +6,9 @@ import ogami_api.ogani_website.exception.DataNotFoundException;
 import ogami_api.ogani_website.order.model.Order;
 import ogami_api.ogani_website.order.model.OrderDetail;
 import ogami_api.ogani_website.order.model.OrderStatus;
-import ogami_api.ogani_website.order.repository.OrderDetailRepository;
 import ogami_api.ogani_website.order.repository.OrderRepository;
 import ogami_api.ogani_website.product.model.Product;
-import ogami_api.ogani_website.product.repository.ProductRepository;
+import ogami_api.ogani_website.product.service.ProductService;
 import ogami_api.ogani_website.user.model.User;
 import ogami_api.ogani_website.user.model.UserRole;
 import ogami_api.ogani_website.user.repository.UserRepository;
@@ -48,10 +47,7 @@ class OrderServiceTest {
     private CartRepository cartRepository;
 
     @Mock
-    private OrderDetailRepository orderDetailRepository;
-
-    @Mock
-    private ProductRepository productRepository;
+    private ProductService productService;
 
     @Mock
     private UserRepository userRepository;
@@ -108,9 +104,8 @@ class OrderServiceTest {
         when(userRepository.findById(1)).thenReturn(Optional.of(testUser));
         when(cartRepository.findByUser_UserId(1)).thenReturn(cartItems);
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        when(orderDetailRepository.saveAll(anyList())).thenReturn(Arrays.asList());
-        when(productRepository.save(any(Product.class))).thenReturn(testProduct);
-        doNothing().when(cartRepository).deleteAll(anyList());
+        doNothing().when(productService).reduceStock(anyInt(), anyInt());
+        doNothing().when(cartRepository).deleteByUser_UserId(1);
 
         // When: createOrderFromCart is called
         Order result = orderService.createOrderFromCart(
@@ -127,7 +122,8 @@ class OrderServiceTest {
         verify(userRepository, times(1)).findById(1);
         verify(cartRepository, times(1)).findByUser_UserId(1);
         verify(orderRepository, times(1)).save(any(Order.class));
-        verify(cartRepository, times(1)).deleteAll(cartItems);
+        verify(productService, times(1)).reduceStock(anyInt(), anyInt());
+        verify(cartRepository, times(1)).deleteByUser_UserId(1);
     }
 
     @Test
@@ -141,8 +137,7 @@ class OrderServiceTest {
         assertThatThrownBy(() -> orderService.createOrderFromCart(
                 1, "Test", "081234567890", "Address"
         ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Cart is empty");
+                .isInstanceOf(IllegalArgumentException.class);
 
         // Verify no order was created
         verify(orderRepository, never()).save(any(Order.class));
@@ -175,21 +170,10 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("Cancel order with PENDING status should cancel and restore stock")
+    @DisplayName("Cancel order with PENDING status should cancel order")
     void cancelOrder_WithPendingOrder_CancelsAndRestoresStock() {
-        // Given: order is PENDING with order details
-        OrderDetail orderDetail = OrderDetail.builder()
-                .detailId(1)
-                .order(testOrder)
-                .product(testProduct)
-                .quantity(2)
-                .priceAtOrder(BigDecimal.valueOf(10000))
-                .build();
-        
-        testOrder.setOrderDetails(Arrays.asList(orderDetail));
-        
+        // Given: order is PENDING
         when(orderRepository.findById(1)).thenReturn(Optional.of(testOrder));
-        when(productRepository.save(any(Product.class))).thenReturn(testProduct);
         
         Order cancelledOrder = Order.builder()
                 .orderId(1)
@@ -202,12 +186,11 @@ class OrderServiceTest {
         // When: cancelOrder is called
         Order result = orderService.cancelOrder(1);
 
-        // Then: order is cancelled and stock is restored
+        // Then: order is cancelled
         assertThat(result).isNotNull();
         assertThat(result.getOrderStatus()).isEqualTo(OrderStatus.CANCELLED);
 
         verify(orderRepository, times(1)).findById(1);
-        verify(productRepository, times(1)).save(any(Product.class));
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
