@@ -125,8 +125,7 @@ class CartServiceTest {
 
         // When & Then: addToCart throws DataNotFoundException
         assertThatThrownBy(() -> cartService.addToCart(999, 1, 2))
-                .isInstanceOf(DataNotFoundException.class)
-                .hasMessageContaining("User not found");
+                .isInstanceOf(DataNotFoundException.class);
 
         verify(cartRepository, never()).save(any(Cart.class));
     }

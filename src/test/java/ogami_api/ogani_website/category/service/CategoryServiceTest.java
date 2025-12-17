@@ -118,14 +118,14 @@ class CategoryServiceTest {
     @DisplayName("Delete category with valid ID should delete category")
     void deleteCategory_WithValidId_DeletesCategory() {
         // Given: category exists
-        when(categoryRepository.findById(1)).thenReturn(Optional.of(testCategory));
-        doNothing().when(categoryRepository).delete(any(Category.class));
+        when(categoryRepository.existsById(1)).thenReturn(true);
+        doNothing().when(categoryRepository).deleteById(1);
 
         // When: deleteCategory is called
         categoryService.deleteCategory(1);
 
         // Then: category is deleted
-        verify(categoryRepository, times(1)).findById(1);
-        verify(categoryRepository, times(1)).delete(testCategory);
+        verify(categoryRepository, times(1)).existsById(1);
+        verify(categoryRepository, times(1)).deleteById(1);
     }
 }
